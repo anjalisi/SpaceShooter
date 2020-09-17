@@ -23,11 +23,15 @@ function preload(){
     //here "sky" is the key
     this.load.image('sky', 'http://labs.phaser.io/assets/skies/space3.png');
     //Loading the images
-    this.load.image('jet', '/assets/jet.png');
-    this.load.image('ammo', '/assets/ammo.png');
-    this.load.image('bomb', '/assets/bomb.png');
-    this.load.image('coin', '/assets/coin.png');
-    //this.load.image('jet', '/assets/jet.png');
+    this.load.image('jet', '/assets/images/jet.png');
+    this.load.image('ammo', '/assets/images/ammo.png');
+    this.load.image('bomb', '/assets/images/bomb.png');
+    this.load.image('coin', '/assets/images/coin.png');
+    //Spritesheet is a set of images, every image is called a frame
+    this.load.spritesheet('explosion', '/assets/images/explosion.png',{
+        frameWidth: 16,
+        frameHeight: 16
+    });
     
 }
 function create(){
@@ -47,11 +51,18 @@ function create(){
     })
     //Adding velocity to the bombs
     setObjVelocity(bomb);
+    //Adding animation after explosion
+    this.anims.create({
+        key: 'explode',
+        frames: this.anims.generateFrameNumbers('explosion'),
+        //20 frames in 1 sec
+        frameRate: 20
+    })
 }
 function setObjVelocity(bombs){
     bombs.children.iterate(function(bom){
         let xVel= Phaser.Math.Between(-100,100);
-        let yVel= Phaser.Math.Between(150,200);
+        let yVel= Phaser.Math.Between(110,170);
         bom.setVelocity(xVel, yVel);
     })
 }
@@ -68,6 +79,16 @@ function shoot(){
 function destroyBomb(ammo, bomb){
     bomb.disableBody(true, true);
     ammo.disableBody(true, true);
+    //Disable that bomb and set that bomb at a new position
+    let x= Phaser.Math.Between(0, config.width-15);
+    let y= Phaser.Math.Between(0, 200);
+    //Now enable the bomb (reset, xcoord, ycoord, enable, show)
+    bomb.enableBody(true, x,y,true, true);
+    //Adding velocity to the bomb
+    let xVel= Phaser.Math.Between(-100,100);
+    let yVel= Phaser.Math.Between(80,170);
+    bomb.setVelocity(xVel, yVel);
+    
 }
 
 function update(){
@@ -85,7 +106,7 @@ function update(){
 
 function checkForBombs(bombs){
     bombs.children.iterate(function(bomb){
-        //if the bomb falls down, reset the y coord
+        //if the bomb falls down, reset the coords of the bomb
         if(bomb.y >config.height){
             resetPos(bomb);
         }
@@ -94,4 +115,7 @@ function checkForBombs(bombs){
 
 function resetPos(bomb){
     bomb.y=0;
+    let randomX= Phaser.Math.Between(15, config.width-15);
+    bomb.x=randomX;
+
 }
