@@ -21,7 +21,9 @@ var game = new Phaser.Game(config);
 var coinhit;
 //Adding the scores
 var score=0;
-var scoreText
+var scoreText;
+var gameOver=false;
+
 function preload(){
     //here "sky" is the key
     this.load.image('sky', 'http://labs.phaser.io/assets/skies/space3.png');
@@ -38,6 +40,8 @@ function preload(){
     //Loading the audio for gunshot and audio collection
     this.load.audio('gun-shot', 'assets/audio/gunshot.wav');
     this.load.audio('coinhit', 'assets/audio/coinhit.wav');
+    //Adding audio for endGame
+    this.load.audio('endRound', 'assets/audio/end.mp3');
 }
 function create(){
     //Making the background dynamic
@@ -75,13 +79,24 @@ function create(){
     })
     //Collect coins when the jet and the coins collide
     this.physics.add.collider(jet, coins, collectCoins, null, this);
+    this.physics.add.collider(jet, bomb, endGame, null, this);
 
     //Adding the gunshot sounds & coin collection
     gunshot= this.sound.add('gun-shot');
     coinHit= this.sound.add('coinhit');
-
+    //Adding game over sound
+    gameEnd= this.sound.add('endRound');
     //Adding scores text
     scoreText = this.add.text(15, 15, 'SCORE : '+score, {fontSize:32, fill:'#ff0000'})
+}
+
+function endGame(jet, bomb){
+    //Pause the anims after end game & play music
+    gameEnd.play()
+    this.physics.pause();
+    //Changing the color of jet to red
+    jet.setTint(0xff0000)
+    gameOver= true;
 }
 
 function collectCoins(jet, coins){
@@ -143,6 +158,7 @@ function destroyBomb(ammo, bomb){
 }
 
 function update(){
+    if(gameOver) return;
     //Moving the screen
     sky.tilePositionY -= 0.5;
     if(keypadControl.left.isDown) jet.setVelocityX(-150);
