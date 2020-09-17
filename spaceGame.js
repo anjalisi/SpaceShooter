@@ -19,7 +19,9 @@ var config = {
 var coins, gunshot,explosion,ammo,sky, jet, keypadControl;
 var game = new Phaser.Game(config);
 var coinhit;
-
+//Adding the scores
+var score=0;
+var scoreText
 function preload(){
     //here "sky" is the key
     this.load.image('sky', 'http://labs.phaser.io/assets/skies/space3.png');
@@ -77,6 +79,9 @@ function create(){
     //Adding the gunshot sounds & coin collection
     gunshot= this.sound.add('gun-shot');
     coinHit= this.sound.add('coinhit');
+
+    //Adding scores text
+    scoreText = this.add.text(15, 15, 'SCORE : '+score, {fontSize:32, fill:'#ff0000'})
 }
 
 function collectCoins(jet, coins){
@@ -94,6 +99,9 @@ function collectCoins(jet, coins){
     let xVel= Phaser.Math.Between(-100,100);
     let yVel= Phaser.Math.Between(80,170);
     coins.setVelocity(xVel, yVel);
+    //Increasing the scores
+    score+=10;
+    scoreText.setText('SCORE : '+score);
 }
 
 function setObjVelocity(bombs){
@@ -129,7 +137,9 @@ function destroyBomb(ammo, bomb){
     let xVel= Phaser.Math.Between(-100,100);
     let yVel= Phaser.Math.Between(80,170);
     bomb.setVelocity(xVel, yVel);
-    
+    //When we destroy the bomb, score should increase
+    score+=40;
+    scoreText.setText('SCORE : '+score);
 }
 
 function update(){
