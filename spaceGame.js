@@ -45,6 +45,15 @@ function create(){
             x:20, y:50, stepX:Phaser.Math.Between(10, config.width-15),stepY:Phaser.Math.Between(15, 300)
         }
     })
+    //Adding velocity to the bombs
+    setObjVelocity(bomb);
+}
+function setObjVelocity(bombs){
+    bombs.children.iterate(function(bom){
+        let xVel= Phaser.Math.Between(-100,100);
+        let yVel= Phaser.Math.Between(150,200);
+        bom.setVelocity(xVel, yVel);
+    })
 }
 function shoot(){
     //Setting the ammo to the top of the jet
@@ -69,4 +78,20 @@ function update(){
     if(keypadControl.up.isDown) jet.setVelocityY(-150);
     else if(keypadControl.down.isDown) jet.setVelocityY(150);
     else jet.setVelocityY(0);
+
+    //Keep falling the bombs, if they have all fell down
+    checkForBombs(bomb);
+}
+
+function checkForBombs(bombs){
+    bombs.children.iterate(function(bomb){
+        //if the bomb falls down, reset the y coord
+        if(bomb.y >config.height){
+            resetPos(bomb);
+        }
+    })
+}
+
+function resetPos(bomb){
+    bomb.y=0;
 }
