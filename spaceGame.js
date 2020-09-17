@@ -16,8 +16,9 @@ var config = {
     }
 };
 //Declaring variables
-var explosion,ammo,sky, jet, keypadControl;
+var coins, gunshot,explosion,ammo,sky, jet, keypadControl;
 var game = new Phaser.Game(config);
+var coinhit;
 
 function preload(){
     //here "sky" is the key
@@ -32,11 +33,13 @@ function preload(){
         frameWidth: 16,
         frameHeight: 16
     })
-    //Loading the audio 
-    
+    //Loading the audio for gunshot and audio collection
+    this.load.audio('gun-shot', 'assets/audio/gunshot.wav');
+    this.load.audio('coinhit', 'assets/audio/coinhit.wav');
 }
 function create(){
-    sky= this.add.image(400,300,'sky');
+    //Making the background dynamic
+    sky= this.add.tileSprite(400,300,config.width, config.height,'sky');
     jet= this.physics.add.image(400,500,'jet').setScale(0.15);
 
     jet.setCollideWorldBounds(true);
@@ -50,7 +53,15 @@ function create(){
             x:20, y:50, stepX:Phaser.Math.Between(10, config.width-15),stepY:Phaser.Math.Between(15, 300)
         }
     })
-    //Adding velocity to the bombs
+    //Adding coins
+    coins= this.physics.add.group();
+    for (let index = 0; index < 10; index++) {
+        let X= Phaser.Math.Between(0, config.width-15);
+        let Y= Phaser.Math.Between(0, 200);
+        let newCoin = coins.create(X,Y,'coin')
+    }
+    //Adding velocity to the bombs & coins
+    setObjVelocity(coins);
     setObjVelocity(bomb);
     //Adding animation after explosion
     this.anims.create({
@@ -60,7 +71,31 @@ function create(){
         //The explosion will be removed after completion
         hideOnComplete: true
     })
+    //Collect coins when the jet and the coins collide
+    this.physics.add.collider(jet, coins, collectCoins, null, this);
+
+    //Adding the gunshot sounds & coin collection
+    gunshot= this.sound.add('gun-shot');
+    coinHit= this.sound.add('coinhit');
 }
+
+function collectCoins(jet, coins){
+    //Enabling coin sounds
+    coinHit.play();
+    //Disable coins after collision
+    coins.disableBody(true, true)
+
+    //enabling coins again
+    let x= Phaser.Math.Between(0, config.width-15);
+    //Now enable the coins (reset, xcoord, ycoord, enable, show)
+    coins.enableBody(true, x,0,true, true);
+    
+    //Adding velocity to the coins
+    let xVel= Phaser.Math.Between(-100,100);
+    let yVel= Phaser.Math.Between(80,170);
+    coins.setVelocity(xVel, yVel);
+}
+
 function setObjVelocity(bombs){
     bombs.children.iterate(function(bom){
         let xVel= Phaser.Math.Between(-100,100);
@@ -79,7 +114,8 @@ function shoot(){
 }
 
 function destroyBomb(ammo, bomb){
-    //Adding the explosion animation
+    //Adding the explosion animation  & the sound
+    gunshot.play()
     explosion = this.add.sprite(bomb.x, bomb.y, 'explosion').setScale(4);
     explosion.play('explode')
     bomb.disableBody(true, true);
@@ -97,6 +133,8 @@ function destroyBomb(ammo, bomb){
 }
 
 function update(){
+    //Moving the screen
+    sky.tilePositionY -= 0.5;
     if(keypadControl.left.isDown) jet.setVelocityX(-150);
     else if(keypadControl.right.isDown) jet.setVelocityX(150);
     else jet.setVelocityX(0);
@@ -105,8 +143,9 @@ function update(){
     else if(keypadControl.down.isDown) jet.setVelocityY(150);
     else jet.setVelocityY(0);
 
-    //Keep falling the bombs, if they have all fell down
+    //Keep falling the bombs and coins, if they have all fell down
     checkForBombs(bomb);
+    checkForBombs(coins)
 }
 
 function checkForBombs(bombs){
