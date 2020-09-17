@@ -16,7 +16,7 @@ var config = {
     }
 };
 //Declaring variables
-var ammo,sky, jet, keypadControl;
+var explosion,ammo,sky, jet, keypadControl;
 var game = new Phaser.Game(config);
 
 function preload(){
@@ -28,10 +28,11 @@ function preload(){
     this.load.image('bomb', '/assets/images/bomb.png');
     this.load.image('coin', '/assets/images/coin.png');
     //Spritesheet is a set of images, every image is called a frame
-    this.load.spritesheet('explosion', '/assets/images/explosion.png',{
+    this.load.spritesheet('explosion', 'assets/spritesheets/explosion.png', {
         frameWidth: 16,
         frameHeight: 16
-    });
+    })
+    //Loading the audio 
     
 }
 function create(){
@@ -55,8 +56,9 @@ function create(){
     this.anims.create({
         key: 'explode',
         frames: this.anims.generateFrameNumbers('explosion'),
-        //20 frames in 1 sec
-        frameRate: 20
+        frameRate: 20,
+        //The explosion will be removed after completion
+        hideOnComplete: true
     })
 }
 function setObjVelocity(bombs){
@@ -77,6 +79,9 @@ function shoot(){
 }
 
 function destroyBomb(ammo, bomb){
+    //Adding the explosion animation
+    explosion = this.add.sprite(bomb.x, bomb.y, 'explosion').setScale(4);
+    explosion.play('explode')
     bomb.disableBody(true, true);
     ammo.disableBody(true, true);
     //Disable that bomb and set that bomb at a new position
